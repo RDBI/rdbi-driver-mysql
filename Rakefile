@@ -11,6 +11,8 @@ begin
     gem.homepage = "http://github.com/erikh/rdbi-dbd-mysql"
     gem.authors = ["Erik Hollensbe"]
     # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
+    gem.add_development_dependency 'test-unit'
+    gem.add_development_dependency 'rdoc'
   end
   Jeweler::GemcutterTasks.new
 rescue LoadError
@@ -41,8 +43,8 @@ task :test => :check_dependencies
 
 task :default => :test
 
-require 'rake/rdoctask'
-Rake::RDocTask.new do |rdoc|
+require 'rdoc/task'
+RDoc::Task.new do |rdoc|
   version = File.exist?('VERSION') ? File.read('VERSION') : ""
 
   rdoc.rdoc_dir = 'rdoc'
