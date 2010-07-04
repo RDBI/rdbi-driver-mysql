@@ -4,11 +4,11 @@ require 'rake'
 begin
   require 'jeweler'
   Jeweler::Tasks.new do |gem|
-    gem.name = "rdbi-dbd-mysql"
+    gem.name = "rdbi-driver-mysql"
     gem.summary = %Q{TODO: one-line summary of your gem}
     gem.description = %Q{TODO: longer description of your gem}
     gem.email = "erik@hollensbe.org"
-    gem.homepage = "http://github.com/erikh/rdbi-dbd-mysql"
+    gem.homepage = "http://github.com/RDBI/rdbi-driver-mysql"
     gem.authors = ["Erik Hollensbe"]
     # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
     gem.add_development_dependency 'test-unit'
