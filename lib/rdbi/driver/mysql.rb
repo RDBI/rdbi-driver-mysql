@@ -72,7 +72,8 @@ class RDBI::Driver::MySQL < RDBI::Driver
       super
     end
 
-    def new_statement
+    def new_statement(query)
+      Statement.new(query, self)
     end
 
     def table_schema(table_name)
@@ -85,13 +86,21 @@ class RDBI::Driver::MySQL < RDBI::Driver
   class Statement < RDBI::Statement
     extend MethLab
 
+    attr_reader :my_query
+
     def initialize(query, dbh)
+      super(query, dbh)
+      @my_query = dbh.my_conn.prepare(query)
+
+      # FIXME type maps
+      @output_type_map = RDBI::Type.create_type_hash( RDBI::Type::Out )
     end
 
     def new_execution(*binds)
     end
 
     def finish
+      @my_query.close
       super
     end
   end
