@@ -30,12 +30,25 @@ class RDBI::Driver::MySQL < RDBI::Driver
       # FIXME flags?
 
       raise ArgumentError, "database name not provided" unless self.database_name
-      raise ArgumentError, "username not provided" unless username
+      raise ArgumentError, "username not provided"      unless username
 
       @my_conn = if args[:host] || args[:hostname]
-                   Mysql.connect(args[:host] || args[:hostname], username, password, self.database_name, args[:port])
+                   Mysql.connect(
+                     args[:host] || args[:hostname], 
+                     username, 
+                     password, 
+                     self.database_name, 
+                     args[:port]
+                   )
                  elsif args[:sock] || args[:socket]
-                   Mysql.connect(nil, username, password, self.database_name, nil, args[:sock])
+                   Mysql.connect(
+                     nil, 
+                     username, 
+                     password, 
+                     self.database_name, 
+                     nil, 
+                     args[:sock] || args[:socket]
+                   )
                  else
                    raise ArgumentError, "either :host, :hostname, :socket, or :sock must be provided as a connection argument"
                  end
