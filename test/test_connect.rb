@@ -40,4 +40,12 @@ class TestConnect < Test::Unit::TestCase
     args.delete(:socket)
     assert_raises(e_connect) { RDBI.connect(:MySQL, args) }
   end
+
+  def test_03_disconnection
+    dbh = connect
+    assert(dbh)
+    assert(dbh.connected?)
+    dbh.disconnect
+    assert(!dbh.connected?)
+  end
 end

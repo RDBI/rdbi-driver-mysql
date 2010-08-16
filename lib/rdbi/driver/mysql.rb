@@ -56,6 +56,8 @@ class RDBI::Driver::MySQL < RDBI::Driver
     end
 
     def disconnect
+      @my_conn.close
+      super
     end
 
     def transaction(&block)
