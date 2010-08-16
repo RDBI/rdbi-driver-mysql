@@ -5,14 +5,17 @@ begin
   require 'jeweler'
   Jeweler::Tasks.new do |gem|
     gem.name = "rdbi-driver-mysql"
-    gem.summary = %Q{TODO: one-line summary of your gem}
-    gem.description = %Q{TODO: longer description of your gem}
+    gem.summary = %Q{mysql gem-based driver for RDBI}
+    gem.description = %Q{mysql gem-based driver for RDBI}
     gem.email = "erik@hollensbe.org"
     gem.homepage = "http://github.com/RDBI/rdbi-driver-mysql"
     gem.authors = ["Erik Hollensbe"]
     # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
+    gem.add_dependency 'mysql', '= 2.8.1'
+
     gem.add_development_dependency 'test-unit'
     gem.add_development_dependency 'rdoc'
+    gem.add_development_dependency 'rdbi-dbrc'
   end
   Jeweler::GemcutterTasks.new
 rescue LoadError

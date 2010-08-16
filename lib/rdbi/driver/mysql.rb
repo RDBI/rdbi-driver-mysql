@@ -2,7 +2,7 @@ require 'rdbi'
 require 'epoxy'
 require 'methlab'
 
-gem 'mysql', '=~ 2.8.1'
+gem 'mysql', '= 2.8.1'
 require 'mysql'
 
 class RDBI::Driver::MySQL < RDBI::Driver
@@ -16,6 +16,7 @@ class RDBI::Driver::MySQL < RDBI::Driver
     extend MethLab
 
     def initialize(*args)
+      p args
     end
 
     def disconnect
