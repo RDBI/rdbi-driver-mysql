@@ -12,4 +12,8 @@ class Test::Unit::TestCase
   def connect
     RDBI::DBRC.connect(:mysql_test)
   end
+
+  def role
+    RDBI::DBRC.roles[:mysql_test]
+  end
 end

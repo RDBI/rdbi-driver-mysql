@@ -6,7 +6,8 @@ class TestConnect < Test::Unit::TestCase
     assert(dbh)
     assert(dbh.connected?)
     assert(dbh.database_name)
-    # FIXME test value of dbname
+
+    assert_equal(dbh.database_name, role[:database])
   end
 
   def test_02_connect_exceptions
