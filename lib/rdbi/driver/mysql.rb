@@ -15,8 +15,31 @@ class RDBI::Driver::MySQL < RDBI::Driver
   class Database < RDBI::Database
     extend MethLab
 
+    attr_reader :my_conn
+
     def initialize(*args)
-      p args
+      super(*args)
+
+      args = args[0]
+
+      self.database_name = args[:database] || args[:dbname] || args[:db]
+
+      username = args[:username] || args[:user]
+      password = args[:password] || args[:pass]
+
+      # FIXME flags?
+
+      raise ArgumentError, "database name not provided" unless self.database_name
+      raise ArgumentError, "username not provided" unless username
+
+      @my_conn = if args[:host]
+                   Mysql.connect(args[:host], username, password, self.database_name, args[:port])
+                 elsif args[:sock]
+                   Mysql.connect(nil, username, password, self.database_name, nil, args[:sock])
+                 else
+                   raise ArgumentError, "either :host or :sock must be provided as a connection argument"
+                 end
+      # FIXME quoter
     end
 
     def disconnect
