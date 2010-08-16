@@ -47,5 +47,7 @@ class TestConnect < Test::Unit::TestCase
     assert(dbh.connected?)
     dbh.disconnect
     assert(!dbh.connected?)
+
+    assert_raises(Mysql::Error.new("MySQL server has gone away")) { dbh.instance_variable_get(:@my_conn).ping }
   end
 end
