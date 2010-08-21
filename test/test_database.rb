@@ -64,9 +64,5 @@ class TestDatabase < Test::Unit::TestCase
     assert_equal 5, row[ 0 ]
     assert_equal 'hello', row[ 1 ]
     assert_equal DateTime.parse( time_str ), row[ 2 ]
-   
-    dbh.cast_booleans = true
-    res = dbh.execute( "SELECT true" )
-    assert_equal true, res.fetch(:first)[0]
   end
 end
