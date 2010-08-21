@@ -133,6 +133,15 @@ class RDBI::Driver::MySQL < RDBI::Driver
 
     def schema
     end
+
+    def ping
+      begin
+        @my_conn.ping
+        return 1
+      rescue
+        raise RDBI::DisconnectedError, "not connected"
+      end
+    end
   end
 
   #
