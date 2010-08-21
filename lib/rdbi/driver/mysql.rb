@@ -298,18 +298,8 @@ class RDBI::Driver::MySQL < RDBI::Driver
       @my_query = dbh.my_conn.prepare(query)
       # FIXME type maps
       @output_type_map = RDBI::Type.create_type_hash( RDBI::Type::Out )
-      datetime_check = proc { |x| x.kind_of?(::Mysql::Time) }
-      zone = DateTime.now.zone
-      # XXX yep. slow as snot.
-      datetime_conv  = proc { |x| DateTime.parse(x.to_s + " #{zone}") }
 
-      @output_type_map[:datetime] = RDBI::Type.filterlist(TypeLib::Filter.new(datetime_check, datetime_conv))
-      if dbh.cast_booleans
-        @output_type_map[:boolean] << TypeLib::Filter.new(
-          proc { |x| x == 1 or x == 0 }, 
-          proc { |x| x == 1 }
-        )
-      end
+      manipulate_type_maps
     end
 
     def new_execution(*binds)
@@ -356,6 +346,34 @@ class RDBI::Driver::MySQL < RDBI::Driver
         'boolean'
       else
         TYPE_MAP[col.type]
+      end
+    end
+
+    def manipulate_type_maps
+      datetime_check = proc { |x| x.kind_of?(::Mysql::Time) }
+      zone = DateTime.now.zone
+      # XXX yep. slow as snot.
+      datetime_conv  = proc { |x| DateTime.parse(x.to_s + " #{zone}") }
+
+      @output_type_map[:datetime] = RDBI::Type.filterlist(TypeLib::Filter.new(datetime_check, datetime_conv))
+
+      @input_type_map[TrueClass] = TypeLib::Filter.new(
+        RDBI::Type::Checks::IS_BOOLEAN,
+        proc { |x| 1 }
+      )
+      
+      @input_type_map[FalseClass] = TypeLib::Filter.new(
+        RDBI::Type::Checks::IS_BOOLEAN,
+        proc { |x| 0 }
+      )
+
+      if dbh.cast_booleans
+        boolean_filter = TypeLib::Filter.new(
+          proc { |x| x == 1 or x == 0 }, 
+          proc { |x| x == 1 }
+        )
+
+        @output_type_map[:boolean] = boolean_filter
       end
     end
   end

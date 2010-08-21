@@ -18,6 +18,10 @@ class Test::Unit::TestCase
     %q[create table integer_test (id integer)],
     %q[drop table if exists foo],
     %q[create table foo (bar integer)],
+    %q[drop table if exists datetime_test],
+    %q[create table datetime_test (item datetime)],
+    %q[drop table if exists boolean_test],
+    %q[create table boolean_test (id integer, item boolean)]
   ]
 
   def init_database
