@@ -88,4 +88,13 @@ class TestDatabase < Test::Unit::TestCase
       dbh.commit
     end
   end
+  
+  def test_05_preprocess_query
+    self.dbh = init_database
+    assert_equal(
+      "insert into foo (bar) values (1)",
+      dbh.preprocess_query( "insert into foo (bar) values (?)", 1 )
+    )
+  end
+
 end

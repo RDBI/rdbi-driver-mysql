@@ -103,7 +103,11 @@ class RDBI::Driver::MySQL < RDBI::Driver
                  else
                    raise ArgumentError, "either :host, :hostname, :socket, or :sock must be provided as a connection argument"
                  end
-      # FIXME quoter
+
+      @preprocess_quoter = proc do |x, named, indexed|
+        @my_conn.quote((named[x] || indexed[x]).to_s)
+      end
+
     end
 
     def disconnect
