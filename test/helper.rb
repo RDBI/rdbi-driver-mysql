@@ -21,7 +21,9 @@ class Test::Unit::TestCase
     %q[drop table if exists datetime_test],
     %q[create table datetime_test (item datetime) ENGINE=InnoDB],
     %q[drop table if exists boolean_test],
-    %q[create table boolean_test (id integer, item boolean) ENGINE=InnoDB]
+    %q[create table boolean_test (id integer, item boolean) ENGINE=InnoDB],
+    %q[drop table if exists bar],
+    %q[create table bar (foo varchar(255), bar integer) ENGINE=InnoDB],
   ]
 
   def init_database

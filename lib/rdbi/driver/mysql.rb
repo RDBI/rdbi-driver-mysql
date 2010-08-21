@@ -107,7 +107,6 @@ class RDBI::Driver::MySQL < RDBI::Driver
       @preprocess_quoter = proc do |x, named, indexed|
         @my_conn.quote((named[x] || indexed[x]).to_s)
       end
-
     end
 
     def disconnect
@@ -144,10 +143,46 @@ class RDBI::Driver::MySQL < RDBI::Driver
       Statement.new(query, self)
     end
 
-    def table_schema(table_name)
+    def table_schema( table_name )
+      info_row = execute(
+        "SELECT table_type FROM information_schema.tables WHERE table_name = ?",
+        table_name.to_s
+      ).fetch( :first )
+      if info_row.nil?
+        return nil
+      end
+
+      sch = RDBI::Schema.new( [], [] )
+      sch.tables << table_name.to_sym
+
+      case info_row[ 0 ]
+      when 'BASE TABLE'
+        sch.type = :table
+      when 'VIEW'
+        sch.type = :view
+      end
+
+      execute( "SELECT column_name, data_type, is_nullable FROM information_schema.columns WHERE table_name = ?",
+        table_name.to_s
+      ).fetch( :all ).each do |row|
+        col = RDBI::Column.new
+        col.name       = row[0].to_sym
+        col.type       = row[1].to_sym
+        # TODO: ensure this ruby_type is solid, especially re: dates and times
+        col.ruby_type  = row[1].to_sym
+        col.nullable   = row[2] == "YES"
+        sch.columns << col
+      end
+
+      sch
     end
 
     def schema
+      schemata = []
+      execute( "SELECT table_name FROM information_schema.tables" ).fetch( :all ).each do |row|
+        schemata << table_schema( row[0] )
+      end
+      schemata
     end
 
     def ping

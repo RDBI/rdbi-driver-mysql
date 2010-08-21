@@ -96,5 +96,43 @@ class TestDatabase < Test::Unit::TestCase
       dbh.preprocess_query( "insert into foo (bar) values (?)", 1 )
     )
   end
+  
+  def test_06_schema
+    self.dbh = init_database
 
+    dbh.execute( "insert into bar (foo, bar) values (?, ?)", "foo", 1 )
+    res = dbh.execute( "select * from bar" )
+
+    assert res
+    assert res.schema
+    assert_kind_of( RDBI::Schema, res.schema )
+    assert res.schema.columns
+    res.schema.columns.each { |x| assert_kind_of(RDBI::Column, x) }
+  end
+  
+  def test_07_table_schema
+    self.dbh = init_database
+    assert_respond_to( dbh, :table_schema )
+
+    schema = dbh.table_schema( :foo )
+    columns = schema.columns
+    assert_equal columns.size, 1
+    c = columns[ 0 ]
+    assert_equal c.name, :bar
+    assert_equal c.type, :int
+
+    schema = dbh.table_schema( :bar )
+    columns = schema.columns
+    assert_equal columns.size, 2
+    columns.each do |c|
+      case c.name
+      when :foo
+        assert_equal c.type, :varchar
+      when :bar
+        assert_equal c.type, :int
+      end
+    end
+
+    assert_nil dbh.table_schema( :non_existent )
+  end
 end
