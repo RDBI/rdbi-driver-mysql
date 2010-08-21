@@ -68,6 +68,7 @@ class RDBI::Driver::MySQL < RDBI::Driver
     extend MethLab
 
     attr_reader :my_conn
+    attr_accessor :cast_booleans
 
     def initialize(*args)
       super(*args)
@@ -83,6 +84,8 @@ class RDBI::Driver::MySQL < RDBI::Driver
 
       raise ArgumentError, "database name not provided" unless self.database_name
       raise ArgumentError, "username not provided"      unless username
+
+      @cast_booleans = args[:cast_booleans] || false
 
       @my_conn = if args[:host] || args[:hostname]
                    Mysql.connect(
@@ -239,7 +242,9 @@ class RDBI::Driver::MySQL < RDBI::Driver
 
     def rewind
       @index = 0
-      @handle.data_seek(0)
+      unless @array_handle
+        @handle.data_seek(0)
+      end
     end
 
     def empty?
@@ -293,6 +298,18 @@ class RDBI::Driver::MySQL < RDBI::Driver
       @my_query = dbh.my_conn.prepare(query)
       # FIXME type maps
       @output_type_map = RDBI::Type.create_type_hash( RDBI::Type::Out )
+      datetime_check = proc { |x| x.kind_of?(::Mysql::Time) }
+      zone = DateTime.now.zone
+      # XXX yep. slow as snot.
+      datetime_conv  = proc { |x| DateTime.parse(x.to_s + " #{zone}") }
+
+      @output_type_map[:datetime] = RDBI::Type.filterlist(TypeLib::Filter.new(datetime_check, datetime_conv))
+      if dbh.cast_booleans
+        @output_type_map[:boolean] << TypeLib::Filter.new(
+          proc { |x| x == 1 or x == 0 }, 
+          proc { |x| x == 1 }
+        )
+      end
     end
 
     def new_execution(*binds)
@@ -314,8 +331,8 @@ class RDBI::Driver::MySQL < RDBI::Driver
         columns = res.result_metadata.fetch_fields.collect do |col|
           RDBI::Column.new(
             col.name.to_sym,
-            TYPE_MAP[col.type],
-            TYPE_MAP[col.type].to_sym,
+            map_type(col),
+            map_type(col).to_sym,
             col.length,
             col.decimals,
             !col.is_not_null?
@@ -328,8 +345,18 @@ class RDBI::Driver::MySQL < RDBI::Driver
     end
 
     def finish
-      @my_query.close
+      @my_query.close rescue nil
       super
+    end
+
+    protected
+
+    def map_type(col)
+      if col.is_num? && col.length == 1
+        'boolean'
+      else
+        TYPE_MAP[col.type]
+      end
     end
   end
 end

@@ -12,6 +12,24 @@ class Test::Unit::TestCase
 
   attr_accessor :dbh
 
+  SQL = [
+    %q[drop table if exists test],
+    %q[drop table if exists integer_test],
+    %q[create table integer_test (id integer)],
+    %q[drop table if exists foo],
+    %q[create table foo (bar integer)],
+  ]
+
+  def init_database
+    self.dbh = connect unless self.dbh and self.dbh.connected?
+
+    SQL.each do |sql|
+      dbh.execute(sql)
+    end
+
+    self.dbh
+  end
+
   def connect
     RDBI::DBRC.connect(:mysql_test)
   end
@@ -21,7 +39,7 @@ class Test::Unit::TestCase
   end
 
   def setup
-    self.dbh = connect
+    init_database
   end
 
   def teardown

@@ -11,14 +11,12 @@ class TestStatement < Test::Unit::TestCase
   end
 
   def test_02_statement_execution
-    dbh.execute("drop table `test`") rescue nil
-    dbh.execute("create table `test` (id integer)")
-    sth = dbh.prepare("insert into test (id) values (?)")
+    sth = dbh.prepare("insert into integer_test (id) values (?)")
     assert(sth)
-    assert_equal(sth.query, "insert into test (id) values (?)")
+    assert_equal(sth.query, "insert into integer_test (id) values (?)")
     sth.execute(1)
     # FIXME affected rows
     sth.finish
-    assert_equal([[1]], dbh.execute("select * from test").fetch(:all))
+    assert_equal([[1]], dbh.execute("select * from integer_test").fetch(:all))
   end
 end
