@@ -112,14 +112,27 @@ class RDBI::Driver::MySQL < RDBI::Driver
     end
 
     def transaction(&block)
+      if in_transaction?
+        raise RDBI::TransactionError.new( "Already in transaction (not supported by MySQL)" )
+      end
+      @my_conn.autocommit(false)
       super &block
+      @my_conn.autocommit(true)
     end
 
     def rollback
+      if ! in_transaction?
+        raise RDBI::TransactionError.new( "Cannot rollback when not in a transaction" )
+      end
+      @my_conn.rollback
       super
     end
 
     def commit
+      if ! in_transaction?
+        raise RDBI::TransactionError.new( "Cannot commit when not in a transaction" )
+      end
+      @my_conn.commit
       super
     end
 

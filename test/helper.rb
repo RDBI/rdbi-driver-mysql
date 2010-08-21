@@ -15,13 +15,13 @@ class Test::Unit::TestCase
   SQL = [
     %q[drop table if exists test],
     %q[drop table if exists integer_test],
-    %q[create table integer_test (id integer)],
+    %q[create table integer_test (id integer) ENGINE=InnoDB],
     %q[drop table if exists foo],
-    %q[create table foo (bar integer)],
+    %q[create table foo (bar integer) ENGINE=InnoDB],
     %q[drop table if exists datetime_test],
-    %q[create table datetime_test (item datetime)],
+    %q[create table datetime_test (item datetime) ENGINE=InnoDB],
     %q[drop table if exists boolean_test],
-    %q[create table boolean_test (id integer, item boolean)]
+    %q[create table boolean_test (id integer, item boolean) ENGINE=InnoDB]
   ]
 
   def init_database

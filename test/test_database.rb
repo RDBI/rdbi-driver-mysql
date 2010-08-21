@@ -43,4 +43,49 @@ class TestDatabase < Test::Unit::TestCase
     row = rows[ 0 ]
     assert_equal( 1, row.bar )
   end
+
+  def test_04_transaction
+    self.dbh = init_database
+
+    dbh.transaction do
+      assert dbh.in_transaction?
+      5.times { dbh.execute( "insert into foo (bar) values (?)", 1 ) }
+      dbh.rollback
+      assert ! dbh.in_transaction?
+    end
+
+    assert ! dbh.in_transaction?
+
+    assert_equal( [], dbh.execute("select * from foo").fetch(:all) )
+
+    dbh.transaction do
+      assert dbh.in_transaction?
+      5.times { dbh.execute("insert into foo (bar) values (?)", 1) }
+      assert_equal( [[1]] * 5, dbh.execute("select * from foo").fetch(:all) )
+      dbh.commit
+      assert ! dbh.in_transaction?
+    end
+
+    assert ! dbh.in_transaction?
+
+    assert_equal( [[1]] * 5, dbh.execute("select * from foo").fetch(:all) )
+
+    dbh.transaction do
+      assert dbh.in_transaction?
+      assert_raises( RDBI::TransactionError ) do
+        dbh.transaction do
+        end
+      end
+    end
+
+    # Not in a transaction
+
+    assert_raises( RDBI::TransactionError ) do
+      dbh.rollback
+    end
+
+    assert_raises( RDBI::TransactionError ) do
+      dbh.commit
+    end
+  end
 end
