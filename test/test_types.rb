@@ -37,4 +37,37 @@ class TestTypes < Test::Unit::TestCase
     assert_equal(1, row[0])
     assert_equal(0, row[1])
   end
+
+  def test_02_general
+    dbh.execute( "insert into foo (bar) values (?)", 1 )
+
+    res = dbh.execute( "select count(*) from foo" )
+    assert res
+    assert_kind_of( RDBI::Result, res )
+    assert_equal( [[1]], res.fetch(:all) )
+    row = res.as( :Array ).fetch( :first )
+    assert_equal 1, row[ 0 ]
+
+    res = dbh.execute( "SELECT 5" )
+    assert res
+    assert_kind_of( RDBI::Result, res )
+    row = res.as( :Array ).fetch( :first )
+    assert_equal 5, row[ 0 ]
+
+    time_str = DateTime.now.strftime( "%Y-%m-%d %H:%M:%S %z" )
+    res = dbh.execute( "SELECT 5, 'hello', cast('#{time_str}' as datetime)" )
+    assert res
+    assert_kind_of( RDBI::Result, res )
+    row = res.fetch( :all )[ 0 ]
+    assert_equal 5, row[ 0 ]
+    assert_equal 'hello', row[ 1 ]
+    assert_equal DateTime.parse( time_str ), row[ 2 ]
+  end
+
+  def test_03_datetime
+    dt = DateTime.now
+    dbh.execute("insert into datetime_test (item) values (?)", dt)
+    row = dbh.execute("select item from datetime_test limit 1").fetch(:first)
+    assert_equal(dt.to_s, row[0].to_s) 
+  end
 end

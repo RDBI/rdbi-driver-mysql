@@ -42,27 +42,5 @@ class TestDatabase < Test::Unit::TestCase
     rows = res.as( :Struct ).fetch( :all )
     row = rows[ 0 ]
     assert_equal( 1, row.bar )
-
-    res = dbh.execute( "select count(*) from foo" )
-    assert res
-    assert_kind_of( RDBI::Result, res )
-    assert_equal( [[1]], res.fetch(:all) )
-    row = res.as( :Array ).fetch( :first )
-    assert_equal 1, row[ 0 ]
-
-    res = dbh.execute( "SELECT 5" )
-    assert res
-    assert_kind_of( RDBI::Result, res )
-    row = res.as( :Array ).fetch( :first )
-    assert_equal 5, row[ 0 ]
-
-    time_str = DateTime.now.strftime( "%Y-%m-%d %H:%M:%S %z" )
-    res = dbh.execute( "SELECT 5, 'hello', cast('#{time_str}' as datetime)" )
-    assert res
-    assert_kind_of( RDBI::Result, res )
-    row = res.fetch( :all )[ 0 ]
-    assert_equal 5, row[ 0 ]
-    assert_equal 'hello', row[ 1 ]
-    assert_equal DateTime.parse( time_str ), row[ 2 ]
   end
 end
