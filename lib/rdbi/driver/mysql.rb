@@ -145,7 +145,8 @@ class RDBI::Driver::MySQL < RDBI::Driver
 
     def table_schema( table_name )
       info_row = execute(
-        "SELECT table_type FROM information_schema.tables WHERE table_name = ?",
+        "SELECT table_type FROM information_schema.tables WHERE table_schema = ? and table_name = ?",
+        self.database_name,
         table_name.to_s
       ).fetch( :first )
       if info_row.nil?
@@ -162,7 +163,8 @@ class RDBI::Driver::MySQL < RDBI::Driver
         sch.type = :view
       end
 
-      execute( "SELECT column_name, data_type, is_nullable FROM information_schema.columns WHERE table_name = ?",
+      execute( "SELECT column_name, data_type, is_nullable FROM information_schema.columns WHERE table_schema = ? and table_name = ?",
+        self.database_name,
         table_name.to_s
       ).fetch( :all ).each do |row|
         col = RDBI::Column.new
@@ -179,7 +181,7 @@ class RDBI::Driver::MySQL < RDBI::Driver
 
     def schema
       schemata = []
-      execute( "SELECT table_name FROM information_schema.tables" ).fetch( :all ).each do |row|
+      execute( "SELECT table_name FROM information_schema.tables where table_schema = ?", self.database_name ).fetch( :all ).each do |row|
         schemata << table_schema( row[0] )
       end
       schemata
