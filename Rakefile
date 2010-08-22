@@ -11,7 +11,8 @@ begin
     gem.homepage = "http://github.com/RDBI/rdbi-driver-mysql"
     gem.authors = ["Erik Hollensbe"]
     # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
-    gem.add_dependency 'mysql', '= 2.8.1'
+    gem.add_dependency 'rdbi'
+    gem.add_dependency 'mysql', '>= 2.8.1'
 
     gem.add_development_dependency 'test-unit'
     gem.add_development_dependency 'rdoc'
