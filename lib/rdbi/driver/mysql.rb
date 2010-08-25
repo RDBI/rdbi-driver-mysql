@@ -144,11 +144,16 @@ class RDBI::Driver::MySQL < RDBI::Driver
     end
 
     def table_schema( table_name )
-      info_row = execute(
+      info_row = nil
+
+      execute(
         "SELECT table_type FROM information_schema.tables WHERE table_schema = ? and table_name = ?",
         self.database_name,
         table_name.to_s
-      ).fetch( :first )
+      ) do |res|
+        info_row = res.fetch(1)[0]
+      end
+
       if info_row.nil?
         return nil
       end
@@ -166,14 +171,16 @@ class RDBI::Driver::MySQL < RDBI::Driver
       execute( "SELECT column_name, data_type, is_nullable FROM information_schema.columns WHERE table_schema = ? and table_name = ?",
         self.database_name,
         table_name.to_s
-      ).fetch( :all ).each do |row|
-        col = RDBI::Column.new
-        col.name       = row[0].to_sym
-        col.type       = row[1].to_sym
-        # TODO: ensure this ruby_type is solid, especially re: dates and times
-        col.ruby_type  = row[1].to_sym
-        col.nullable   = row[2] == "YES"
-        sch.columns << col
+      ) do |res|
+          res.fetch( :all ).each do |row|
+            col = RDBI::Column.new
+            col.name       = row[0].to_sym
+            col.type       = row[1].to_sym
+            # TODO: ensure this ruby_type is solid, especially re: dates and times
+            col.ruby_type  = row[1].to_sym
+            col.nullable   = row[2] == "YES"
+            sch.columns << col
+          end
       end
 
       sch
@@ -181,10 +188,11 @@ class RDBI::Driver::MySQL < RDBI::Driver
 
     def schema
       schemata = []
-      execute( "SELECT table_name FROM information_schema.tables where table_schema = ?", self.database_name ).fetch( :all ).each do |row|
-        schemata << table_schema( row[0] )
+      execute( "SELECT table_name FROM information_schema.tables where table_schema = ?", self.database_name ) do |res| 
+        schemata = res.fetch( :all )
       end
-      schemata
+
+      schemata.collect { |x| table_schema(x[0]) }
     end
 
     def ping
@@ -250,9 +258,9 @@ class RDBI::Driver::MySQL < RDBI::Driver
         @array_handle.first
       else
         cnt = @handle.row_tell
-        @handle.data_seek(0)
+        @handle.row_seek(0)
         res = @handle.fetch
-        @handle.data_seek(cnt)
+        @handle.row_seek(cnt)
         res
       end
     end
@@ -262,9 +270,9 @@ class RDBI::Driver::MySQL < RDBI::Driver
         @array_handle.last
       else
         cnt = @handle.row_tell
-        @handle.data_seek(@handle.num_rows)
+        @handle.row_seek(@handle.num_rows - cnt)
         res = @handle.fetch
-        @handle.data_seek(cnt)
+        @handle.row_seek(cnt)
         res
       end
     end
@@ -275,7 +283,11 @@ class RDBI::Driver::MySQL < RDBI::Driver
     end
 
     def all
-      fetch_range(0, (@handle.num_rows rescue @array_handle.size))
+      if @array_handle
+        fetch_range(0, @array_handle.size)
+      else
+        fetch_range(0, @handle.num_rows)
+      end
     end
 
     def [](index)
@@ -286,7 +298,7 @@ class RDBI::Driver::MySQL < RDBI::Driver
       if @array_handle
         @index == @array_handle.size
       else
-        @handle.eof?
+        @index == @handle.num_rows
       end
     end
 
@@ -319,14 +331,16 @@ class RDBI::Driver::MySQL < RDBI::Driver
 
     def fetch_range(start, stop)
       if @array_handle
-        @array_handle[start, stop]
+        return @array_handle[start, stop]
       else
         ary = []
 
         @handle.data_seek(start)
         (stop - start).times do 
-          @handle.fetch
+          ary.push @handle.fetch
         end
+
+        return ary
       end
     end
   end

@@ -17,6 +17,9 @@ class TestStatement < Test::Unit::TestCase
     sth.execute(1)
     # FIXME affected rows
     sth.finish
-    assert_equal([[1]], dbh.execute("select * from integer_test").fetch(:all))
+
+    dbh.execute("select * from integer_test") do |res|
+      assert_equal([[1]], res.fetch(:all))
+    end
   end
 end

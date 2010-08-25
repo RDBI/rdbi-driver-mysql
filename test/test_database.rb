@@ -29,23 +29,26 @@ class TestDatabase < Test::Unit::TestCase
   
   def test_03_execute
     self.dbh = init_database
-    res = dbh.execute( "insert into foo (bar) values (?)", 1 )
-    assert res
-    assert_kind_of( RDBI::Result, res )
-    assert_equal( 1, res.affected_count )
+    dbh.execute( "insert into foo (bar) values (?)", 1 ) do |res|
+      assert res
+      assert_kind_of( RDBI::Result, res )
+      assert_equal( 1, res.affected_count )
+    end
 
-    res = dbh.execute( "select * from foo" )
-    assert res
-    assert_kind_of( RDBI::Result, res )
-    assert_equal( [[1]], res.fetch(:all) )
+    dbh.execute( "select * from foo" ) do |res|
+      assert res
+      assert_kind_of( RDBI::Result, res )
+      assert_equal( [[1]], res.fetch(:all) )
 
-    rows = res.as( :Struct ).fetch( :all )
-    row = rows[ 0 ]
-    assert_equal( 1, row.bar )
+      rows = res.as( :Struct ).fetch( :all )
+      row = rows[ 0 ]
+      assert_equal( 1, row.bar )
+    end
   end
 
   def test_04_transaction
     self.dbh = init_database
+    dbh.rewindable_result = true
 
     dbh.transaction do
       assert dbh.in_transaction?
