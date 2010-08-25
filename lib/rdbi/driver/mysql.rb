@@ -257,11 +257,7 @@ class RDBI::Driver::MySQL < RDBI::Driver
       if @array_handle
         @array_handle.first
       else
-        cnt = @handle.row_tell
-        @handle.row_seek(0)
-        res = @handle.fetch
-        @handle.row_seek(cnt)
-        res
+        raise RDBI::Cursor::NotRewindableError, "first requires a rewindable result in mysql"
       end
     end
 
@@ -269,16 +265,19 @@ class RDBI::Driver::MySQL < RDBI::Driver
       if @array_handle
         @array_handle.last
       else
-        cnt = @handle.row_tell
-        @handle.row_seek(@handle.num_rows - cnt)
-        res = @handle.fetch
-        @handle.row_seek(cnt)
-        res
+        raise RDBI::Cursor::NotRewindableError, "last requires a rewindable result in mysql"
       end
     end
 
     def rest
-      oindex, @index = [@index, @handle.num_rows] rescue [@index, @array_handle.size]
+      oindex = nil
+
+      if @array_handle
+        oindex, @index = @index, @array_handle.size
+      else
+        oindex, @index = @index, @handle.num_rows
+      end
+
       fetch_range(oindex, @index)
     end
 

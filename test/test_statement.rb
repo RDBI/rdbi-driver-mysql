@@ -22,4 +22,27 @@ class TestStatement < Test::Unit::TestCase
       assert_equal([[1]], res.fetch(:all))
     end
   end
+
+  def test_03_first_and_last
+    dbh.execute("insert into integer_test (id) values (?)", 1)
+
+    sth = dbh.prepare("select * from integer_test")
+    res = sth.execute
+
+    assert_raises(RDBI::Cursor::NotRewindableError) do
+      res.fetch(:first)
+    end
+
+    assert_raises(RDBI::Cursor::NotRewindableError) do
+      res.fetch(:last)
+    end
+
+    sth.rewindable_result = true
+    res = sth.execute
+
+    assert_equal([1], res.fetch(:first))
+    assert_equal([1], res.fetch(:last))
+
+    sth.finish
+  end
 end
