@@ -1,6 +1,12 @@
 require 'helper'
 
 class TestTypes < Test::Unit::TestCase
+
+  def setup
+    super
+    dbh.rewindable_result = true
+  end
+
   def test_01_booleans
     dbh.cast_booleans = true
     res = dbh.execute( "SELECT true" )
