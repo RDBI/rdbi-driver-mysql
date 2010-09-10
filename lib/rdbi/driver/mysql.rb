@@ -378,6 +378,21 @@ class RDBI::Driver::MySQL < RDBI::Driver
       manipulate_type_maps
     end
 
+    def new_modification(*binds)
+      # FIXME move to RDBI::Util or something.
+      hashes, binds = binds.partition { |x| x.kind_of?(Hash) }
+      hash = hashes.inject({}) { |x, y| x.merge(y) }
+      hash.keys.each do |key| 
+        if index = @index_map.index(key)
+          binds.insert(index, hash[key])
+        end
+      end
+
+      res = @my_query.execute(*binds)
+
+      return res.affected_rows
+    end
+
     def new_execution(*binds)
       # FIXME move to RDBI::Util or something.
       hashes, binds = binds.partition { |x| x.kind_of?(Hash) }

@@ -29,11 +29,7 @@ class TestDatabase < Test::Unit::TestCase
   
   def test_03_execute
     self.dbh = init_database
-    dbh.execute( "insert into foo (bar) values (?)", 1 ) do |res|
-      assert res
-      assert_kind_of( RDBI::Result, res )
-      assert_equal( 1, res.affected_count )
-    end
+    assert_equal(1, dbh.execute_modification( "insert into foo (bar) values (?)", 1 ))
 
     dbh.execute( "select * from foo" ) do |res|
       assert res
@@ -52,7 +48,7 @@ class TestDatabase < Test::Unit::TestCase
 
     dbh.transaction do
       assert dbh.in_transaction?
-      5.times { dbh.execute( "insert into foo (bar) values (?)", 1 ) }
+      5.times { dbh.execute_modification( "insert into foo (bar) values (?)", 1 ) }
       dbh.rollback
       assert ! dbh.in_transaction?
     end
@@ -63,7 +59,7 @@ class TestDatabase < Test::Unit::TestCase
 
     dbh.transaction do
       assert dbh.in_transaction?
-      5.times { dbh.execute("insert into foo (bar) values (?)", 1) }
+      5.times { dbh.execute_modification("insert into foo (bar) values (?)", 1) }
       assert_equal( [[1]] * 5, dbh.execute("select * from foo").fetch(:all) )
       dbh.commit
       assert ! dbh.in_transaction?
@@ -103,7 +99,7 @@ class TestDatabase < Test::Unit::TestCase
   def test_06_schema
     self.dbh = init_database
 
-    dbh.execute( "insert into bar (foo, bar) values (?, ?)", "foo", 1 )
+    dbh.execute_modification( "insert into bar (foo, bar) values (?, ?)", "foo", 1 )
     res = dbh.execute( "select * from bar" )
 
     assert res
