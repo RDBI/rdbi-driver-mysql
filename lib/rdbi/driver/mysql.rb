@@ -376,6 +376,8 @@ class RDBI::Driver::MySQL < RDBI::Driver
       @output_type_map = RDBI::Type.create_type_hash( RDBI::Type::Out )
 
       manipulate_type_maps
+
+      prep_finalizer { @my_query.close rescue nil }
     end
 
     def new_modification(*binds)
@@ -423,11 +425,6 @@ class RDBI::Driver::MySQL < RDBI::Driver
 
       schema = RDBI::Schema.new columns
       [ Cursor.new(res), schema, @output_type_map ]
-    end
-
-    def finish
-      @my_query.close rescue nil
-      super
     end
 
     protected
