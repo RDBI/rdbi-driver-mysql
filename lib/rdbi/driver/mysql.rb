@@ -443,23 +443,23 @@ class RDBI::Driver::MySQL < RDBI::Driver
       # XXX yep. slow as snot.
       datetime_conv  = proc { |x| DateTime.parse(x.to_s + " #{zone}") }
 
-      @output_type_map[:datetime] = RDBI::Type.filterlist(TypeLib::Filter.new(datetime_check, datetime_conv))
+      @output_type_map[:datetime] = [TypeLib::Filter.new(datetime_check, datetime_conv)]
 
-      @input_type_map[TrueClass] = TypeLib::Filter.new(
+      @input_type_map[TrueClass] = [TypeLib::Filter.new(
         RDBI::Type::Checks::IS_BOOLEAN,
         proc { |x| 1 }
-      )
+      )]
       
-      @input_type_map[FalseClass] = TypeLib::Filter.new(
+      @input_type_map[FalseClass] = [TypeLib::Filter.new(
         RDBI::Type::Checks::IS_BOOLEAN,
         proc { |x| 0 }
-      )
+      )]
 
       if dbh.cast_booleans
-        boolean_filter = TypeLib::Filter.new(
+        boolean_filter = [TypeLib::Filter.new(
           proc { |x| x == 1 or x == 0 }, 
           proc { |x| x == 1 }
-        )
+        )]
 
         @output_type_map[:boolean] = boolean_filter
       end
