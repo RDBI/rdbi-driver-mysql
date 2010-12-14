@@ -24,6 +24,8 @@ class Test::Unit::TestCase
     %q[create table boolean_test (id integer, item boolean) ENGINE=InnoDB],
     %q[drop table if exists bar],
     %q[create table bar (foo varchar(255), bar integer) ENGINE=InnoDB],
+    %q[drop table if exists pk_test],
+    %q[create table pk_test (id integer primary key auto_increment, something_else varchar(255) not null) ENGINE=InnoDB],
   ]
 
   def init_database

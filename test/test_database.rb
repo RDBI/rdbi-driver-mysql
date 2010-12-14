@@ -107,11 +107,15 @@ class TestDatabase < Test::Unit::TestCase
     assert_kind_of( RDBI::Schema, res.schema )
     assert res.schema.columns
     res.schema.columns.each { |x| assert_kind_of(RDBI::Column, x) }
+    
   end
   
   def test_07_table_schema
     self.dbh = init_database
     assert_respond_to( dbh, :table_schema )
+    
+    assert(dbh.table_schema('pk_test').columns.find {|x| x.name == :id }.primary_key)
+    assert(!dbh.table_schema('pk_test').columns.find {|x| x.name == :something_else }.primary_key)
 
     schema = dbh.table_schema( :foo )
     columns = schema.columns
@@ -140,13 +144,14 @@ class TestDatabase < Test::Unit::TestCase
     assert_respond_to( dbh, :schema )
     schema = dbh.schema.sort_by { |x| x.tables[0].to_s }
 
-    tables = [ :bar, :boolean_test, :datetime_test, :foo, :integer_test ]
+    tables = [ :bar, :boolean_test, :datetime_test, :foo, :integer_test, :pk_test ]
     columns = {
       :bar => { :foo => :varchar, :bar => :int },
       :foo => { :bar => :int },
       :integer_test => { :id => :int },
       :datetime_test => { :item => :datetime },
       :boolean_test => { :id => :int, :item => :tinyint },
+      :pk_test => { :id => :int, :something_else => :varchar }
     }
 
     schema.each_with_index do |sch, x|
@@ -158,5 +163,16 @@ class TestDatabase < Test::Unit::TestCase
         assert_equal( columns[ tables[x] ][ col.name ], col.type )
       end
     end
+  end
+
+  def test_09_quote
+    self.dbh = init_database
+
+    assert_equal(%q[1], dbh.quote(1))
+    assert_equal(%q[0], dbh.quote(false))
+    assert_equal(%q[1], dbh.quote(true))
+    assert_equal(%q[NULL], dbh.quote(nil))
+    assert_equal(%q['shit'], dbh.quote('shit'))
+    assert_equal(%q['shit\\'t'], dbh.quote('shit\'t'))
   end
 end

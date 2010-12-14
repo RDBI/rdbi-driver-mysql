@@ -1,6 +1,5 @@
 require 'rdbi'
 require 'epoxy'
-require 'methlab'
 
 gem 'mysql'
 require 'mysql'
@@ -61,8 +60,6 @@ class RDBI::Driver::MySQL < RDBI::Driver
   end
 
   class Database < RDBI::Database
-    extend MethLab
-
     attr_reader :my_conn
     attr_accessor :cast_booleans
 
@@ -147,7 +144,11 @@ class RDBI::Driver::MySQL < RDBI::Driver
       info_row = nil
 
       execute(
-        "SELECT table_type FROM information_schema.tables WHERE table_schema = ? and table_name = ?",
+        %q[
+          SELECT table_type 
+          FROM information_schema.tables 
+          WHERE table_schema = ? and table_name = ?
+        ],
         self.database_name,
         table_name.to_s
       ) do |res|
@@ -168,7 +169,15 @@ class RDBI::Driver::MySQL < RDBI::Driver
         sch.type = :view
       end
 
-      execute( "SELECT column_name, data_type, is_nullable FROM information_schema.columns WHERE table_schema = ? and table_name = ?",
+      execute(%q[
+          SELECT c.column_name, c.data_type, c.is_nullable, tc.constraint_type
+          FROM information_schema.columns c
+            LEFT JOIN information_schema.key_column_usage kcu
+              ON kcu.column_name = c.column_name
+              LEFT JOIN information_schema.table_constraints tc
+                ON tc.constraint_name = kcu.constraint_name
+          WHERE c.table_schema = ? and c.table_name = ?
+        ],
         self.database_name,
         table_name.to_s
       ) do |res|
@@ -179,6 +188,7 @@ class RDBI::Driver::MySQL < RDBI::Driver
             # TODO: ensure this ruby_type is solid, especially re: dates and times
             col.ruby_type  = row[1].to_sym
             col.nullable   = row[2] == "YES"
+            col.primary_key = row[3] == "PRIMARY KEY"
             sch.columns << col
           end
       end
@@ -188,7 +198,11 @@ class RDBI::Driver::MySQL < RDBI::Driver
 
     def schema
       schemata = []
-      execute( "SELECT table_name FROM information_schema.tables where table_schema = ?", self.database_name ) do |res| 
+      execute(%q[
+        SELECT table_name 
+        FROM information_schema.tables 
+        WHERE table_schema = ?
+      ], self.database_name ) do |res| 
         schemata = res.fetch( :all )
       end
 
@@ -201,6 +215,21 @@ class RDBI::Driver::MySQL < RDBI::Driver
         return 1
       rescue
         raise RDBI::DisconnectedError, "not connected"
+      end
+    end
+    
+    def quote(item)
+      case item
+      when Numeric
+        item.to_s
+      when TrueClass
+        '1'
+      when FalseClass
+        '0'
+      when NilClass
+        'NULL'
+      else
+        "'#{@my_conn.quote(item)}'"
       end
     end
   end
@@ -358,8 +387,6 @@ class RDBI::Driver::MySQL < RDBI::Driver
   end
   
   class Statement < RDBI::Statement
-    extend MethLab
-
     attr_reader :my_query
 
     def initialize(query, dbh)
