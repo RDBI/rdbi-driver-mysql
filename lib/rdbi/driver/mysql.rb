@@ -2,7 +2,7 @@ require 'rdbi'
 require 'epoxy'
 require 'methlab'
 
-gem 'mysql', '= 2.8.1'
+gem 'mysql'
 require 'mysql'
 
 class RDBI::Driver::MySQL < RDBI::Driver
