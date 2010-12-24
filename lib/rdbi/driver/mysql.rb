@@ -170,7 +170,7 @@ class RDBI::Driver::MySQL < RDBI::Driver
       end
 
       execute(%q[
-          SELECT c.column_name, c.data_type, c.is_nullable, tc.constraint_type
+          SELECT distinct c.column_name, c.data_type, c.is_nullable, tc.constraint_type
           FROM information_schema.columns c
             LEFT JOIN information_schema.key_column_usage kcu
               ON kcu.column_name = c.column_name
@@ -199,7 +199,7 @@ class RDBI::Driver::MySQL < RDBI::Driver
     def schema
       schemata = []
       execute(%q[
-        SELECT table_name 
+        SELECT distinct table_name 
         FROM information_schema.tables 
         WHERE table_schema = ?
       ], self.database_name ) do |res| 
