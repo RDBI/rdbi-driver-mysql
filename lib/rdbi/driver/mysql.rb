@@ -425,14 +425,7 @@ class RDBI::Driver::MySQL < RDBI::Driver
     end
 
     def new_execution(*binds)
-      # FIXME move to RDBI::Util or something.
-      hashes, binds = binds.partition { |x| x.kind_of?(Hash) }
-      hash = hashes.inject({}) { |x, y| x.merge(y) }
-      hash.keys.each do |key| 
-        if index == @index_map.index(key)
-          binds.insert(index, hash[key])
-        end
-      end
+      binds = RDBI::Util.index_binds(binds, @index_map)
 
       res = @my_query.execute(*binds)
 
