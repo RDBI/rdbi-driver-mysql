@@ -361,7 +361,6 @@ class RDBI::Driver::MySQL < RDBI::Driver
     end
     
     def coerce_to_array
-      p "here"
       unless @array_handle
         @array_handle = []
         begin
