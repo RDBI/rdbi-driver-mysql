@@ -35,6 +35,7 @@ class Test::Unit::TestCase
       dbh.execute(sql)
     end
 
+    self.dbh.rewindable_result = false
     self.dbh
   end
 

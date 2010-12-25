@@ -167,6 +167,8 @@ class RDBI::Driver::MySQL < RDBI::Driver
         sch.type = :table
       when 'VIEW'
         sch.type = :view
+      else
+        sch.type = :table
       end
 
       execute(%q[
@@ -359,6 +361,7 @@ class RDBI::Driver::MySQL < RDBI::Driver
     end
     
     def coerce_to_array
+      p "here"
       unless @array_handle
         @array_handle = []
         begin
@@ -412,7 +415,7 @@ class RDBI::Driver::MySQL < RDBI::Driver
       hashes, binds = binds.partition { |x| x.kind_of?(Hash) }
       hash = hashes.inject({}) { |x, y| x.merge(y) }
       hash.keys.each do |key| 
-        if index = @index_map.index(key)
+        if index == @index_map.index(key)
           binds.insert(index, hash[key])
         end
       end
@@ -427,7 +430,7 @@ class RDBI::Driver::MySQL < RDBI::Driver
       hashes, binds = binds.partition { |x| x.kind_of?(Hash) }
       hash = hashes.inject({}) { |x, y| x.merge(y) }
       hash.keys.each do |key| 
-        if index = @index_map.index(key)
+        if index == @index_map.index(key)
           binds.insert(index, hash[key])
         end
       end

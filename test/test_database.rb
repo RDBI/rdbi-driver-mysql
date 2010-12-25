@@ -44,7 +44,7 @@ class TestDatabase < Test::Unit::TestCase
 
   def test_04_transaction
     self.dbh = init_database
-    dbh.rewindable_result = true
+    dbh.rewindable_result = false
 
     dbh.transaction do
       assert dbh.in_transaction?

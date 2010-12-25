@@ -4,7 +4,6 @@ class TestTypes < Test::Unit::TestCase
 
   def setup
     super
-    dbh.rewindable_result = true
   end
 
   def test_01_booleans
