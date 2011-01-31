@@ -19,7 +19,7 @@ class RDBI::Driver::MySQL < RDBI::Driver
     TYPE_MAP[mysql_type] =
       case const.to_s
       when 'TYPE_TINY', 'TYPE_CHAR'
-        # XXX gonna break. design fix.
+        # FIXME gonna break. design fix.
         'tinyint'
       when 'TYPE_SHORT'
         'smallint'
@@ -49,7 +49,6 @@ class RDBI::Driver::MySQL < RDBI::Driver
           'TYPE_DECIMAL',
           'TYPE_BLOB',
           'TYPE_ENUM',
-          'TYPE_SET',
           'TYPE_SET',
           'TYPE_BIT',
           'TYPE_NULL'
@@ -116,7 +115,7 @@ class RDBI::Driver::MySQL < RDBI::Driver
         raise RDBI::TransactionError.new( "Already in transaction (not supported by MySQL)" )
       end
       @my_conn.autocommit(false)
-      super &block
+      super(&block)
       @my_conn.autocommit(true)
     end
 
@@ -248,6 +247,7 @@ class RDBI::Driver::MySQL < RDBI::Driver
     def initialize(handle)
       super(handle)
       @index = 0
+      @array_handle = nil
     end
 
     def fetch(count=1)

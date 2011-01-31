@@ -11,10 +11,6 @@ class TestConnect < Test::Unit::TestCase
   end
 
   def test_02_connect_exceptions
-    e_database = ArgumentError.new("database name not provided")
-    e_username = ArgumentError.new("username not provided")
-    e_connect  = ArgumentError.new("either :host, :hostname, :socket, or :sock must be provided as a connection argument")
-
     base_args = {
       :host     => "localhost",
       :hostname => "localhost",
@@ -28,18 +24,18 @@ class TestConnect < Test::Unit::TestCase
 
     args = base_args.dup
     args.delete(:database)
-    assert_raises(e_database) { RDBI.connect(:MySQL, args) }
+    assert_raises(ArgumentError) { RDBI.connect(:MySQL, args) }
 
     args = base_args.dup
     args.delete(:username)
-    assert_raises(e_username) { RDBI.connect(:MySQL, args) }
+    assert_raises(ArgumentError) { RDBI.connect(:MySQL, args) }
     
     args = base_args.dup
     args.delete(:host)
     args.delete(:hostname)
     args.delete(:sock)
     args.delete(:socket)
-    assert_raises(e_connect) { RDBI.connect(:MySQL, args) }
+    assert_raises(ArgumentError) { RDBI.connect(:MySQL, args) }
   end
 
   def test_03_disconnection
@@ -49,6 +45,6 @@ class TestConnect < Test::Unit::TestCase
     dbh.disconnect
     assert(!dbh.connected?)
 
-    assert_raises(Mysql::Error.new("MySQL server has gone away")) { dbh.instance_variable_get(:@my_conn).ping }
+    assert_raises(Mysql::Error) { dbh.instance_variable_get(:@my_conn).ping }
   end
 end
