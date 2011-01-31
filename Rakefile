@@ -1,49 +1,44 @@
+# -*- ruby -*-
+
 require 'rubygems'
-require 'rake'
+require 'hoe'
 
-begin
-  require 'jeweler'
-  Jeweler::Tasks.new do |gem|
-    gem.name = "rdbi-driver-mysql"
-    gem.summary = %Q{mysql gem-based driver for RDBI}
-    gem.description = %Q{mysql gem-based driver for RDBI}
-    gem.email = "erik@hollensbe.org"
-    gem.homepage = "http://github.com/RDBI/rdbi-driver-mysql"
-    gem.authors = ["Erik Hollensbe"]
-    # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
-    gem.add_dependency 'rdbi'
-    gem.add_dependency 'mysql', '>= 2.8.1'
+Hoe.plugins.delete :rubyforge
+Hoe.plugin :git
+Hoe.plugin :rcov
 
-    gem.add_development_dependency 'test-unit'
-    gem.add_development_dependency 'rdoc'
-    gem.add_development_dependency 'rdbi-dbrc'
-  end
-  Jeweler::GemcutterTasks.new
-rescue LoadError
-  puts "Jeweler (or a dependency) not available. Install it with: gem install jeweler"
-end
+Hoe.spec 'rdbi' do
+  developer 'Erik Hollensbe', 'erik@hollensbe.org'
 
-require 'rake/testtask'
-Rake::TestTask.new(:test) do |test|
-  test.libs << 'lib' << 'test'
-  test.pattern = 'test/**/test_*.rb'
-  test.verbose = true
-end
+  self.rubyforge_name = nil
 
-begin
-  require 'rcov/rcovtask'
-  Rcov::RcovTask.new do |test|
-    test.libs << 'test'
-    test.pattern = 'test/**/test_*.rb'
-    test.verbose = true
-  end
-rescue LoadError
-  task :rcov do
-    abort "RCov is not available. In order to run rcov, you must: sudo gem install spicycode-rcov"
+  self.description = <<-EOF
+  This is the mysql driver for RDBI.
+
+  RDBI is a database interface built out of small parts. A micro framework for
+  databases, RDBI works with and extends libraries like 'typelib' and 'epoxy'
+  to provide type conversion and binding facilities. Via a driver/adapter
+  system it provides database access. RDBI itself provides pooling and other
+  enhanced database features.
+  EOF
+
+  self.summary = 'MySQL driver for RDBI';
+  self.url = %w[http://github.com/rdbi/rdbi-driver-mysql]
+  
+  require_ruby_version ">= 1.8.7"
+
+  extra_dev_deps << ['roodi']
+  extra_dev_deps << ['reek']
+  extra_dev_deps << ['minitest']
+
+  extra_deps << ['rdbi']
+  extra_deps << ['mysql', '>= 2.8.1']
+
+  desc "install a gem without sudo"
+  task :install => [:gem] do
+    sh "gem install pkg/#{self.name}-#{self.version}.gem"
   end
 end
-
-task :test => :check_dependencies
 
 begin
   require 'roodi'
@@ -68,14 +63,4 @@ rescue LoadError
   end
 end
 
-task :default => :test
-
-require 'rdoc/task'
-RDoc::Task.new do |rdoc|
-  version = File.exist?('VERSION') ? File.read('VERSION') : ""
-
-  rdoc.rdoc_dir = 'rdoc'
-  rdoc.title = "rdbi-dbd-mysql #{version}"
-  rdoc.rdoc_files.include('README*')
-  rdoc.rdoc_files.include('lib/**/*.rb')
-end
+# vim: syntax=ruby

@@ -1,10 +1,10 @@
 require 'rdbi'
 require 'epoxy'
-
-gem 'mysql'
 require 'mysql'
 
 class RDBI::Driver::MySQL < RDBI::Driver
+  VERSION = "1.0.0"
+
   def initialize( *args )
     super( Database, *args )
   end

@@ -1,0 +1,15 @@
+.document
+History.txt
+LICENSE
+Manifest.txt
+README.txt
+Rakefile
+VERSION
+lib/rdbi-driver-mysql.rb
+lib/rdbi/driver/mysql.rb
+rdbi-driver-mysql.gemspec
+test/helper.rb
+test/test_connect.rb
+test/test_database.rb
+test/test_statement.rb
+test/test_types.rb
